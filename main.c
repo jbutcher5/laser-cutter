@@ -2,8 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 
 #define MAGIC 0x11
+
+typedef struct {
+  uint8_t hh;
+  uint8_t h;
+  uint8_t m;
+  uint8_t l;
+  uint8_t ll;
+} ABSCOORD;
+
+uint64_t abscoord_to_int(ABSCOORD *x) {
+  uint64_t buffer = 0;
+
+  for (int i = 0, k = 28; i < 5; i++, k -= 7)
+    buffer |= *(((uint8_t *)x) + i) << k;
+
+  return buffer;
+}
 
 uint8_t *transmition(const char *s) {
   // Final buffer to be returned at the end
@@ -13,7 +31,7 @@ uint8_t *transmition(const char *s) {
   // Create null-terminated buffer
   char tmp[3];
   tmp[2] = 0;
-
+  
   // Read data into buffer
   for (int i = 0; i < strlen(s); i+=2) {
     int buff_index = (i / 2) + 1;
@@ -44,13 +62,24 @@ void descramble_buffer(uint8_t *buff) {
 }
 
 int main() {
+  /*
   uint8_t *b = transmition("4b9296701832925a12");
 
-  descramble_buffer(b);
-
-  for (int i = 1; i < b[0]; i++) {
-    printf("0x%x\n", b[i]);
-  }
+  uint8_t *buffer = calloc(b[0], sizeof(uint8_t));
+  memcpy(buffer, b + 1, b[0]);
   
+  descramble_buffer(buffer);
+
+  for (int i = 0; i < b[0]; i++) {
+    printf("0x%x\n", buffer[i]);
+  }
+  */
+
+  ABSCOORD x = {
+      0x00, 0x00, 0x02, 0x3C, 0x02,
+  };
+
+  printf("%" PRIu64 "\n", abscoord_to_int(&x));
+
   return 0;
 }
