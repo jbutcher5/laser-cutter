@@ -1,8 +1,8 @@
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
 
 #define MAGIC 0x11
 
@@ -26,14 +26,14 @@ uint64_t abscoord_to_int(ABSCOORD *x) {
 uint8_t *transmition(const char *s) {
   // Final buffer to be returned at the end
   static uint8_t buffer[256];
-  buffer[0] = strlen(s)/2;
-  
+  buffer[0] = strlen(s) / 2;
+
   // Create null-terminated buffer
   char tmp[3];
   tmp[2] = 0;
-  
+
   // Read data into buffer
-  for (int i = 0; i < strlen(s); i+=2) {
+  for (int i = 0; i < strlen(s); i += 2) {
     int buff_index = (i / 2) + 1;
 
     tmp[0] = s[i];
@@ -61,25 +61,62 @@ void descramble_buffer(uint8_t *buff) {
   }
 }
 
-int main() {
-  /*
-  uint8_t *b = transmition("4b9296701832925a12");
+typedef struct {
+  uint8_t *buffer;
+  uint64_t size;
+  uint8_t *curr;
+  uint8_t *next;
+} ParserContext;
 
-  uint8_t *buffer = calloc(b[0], sizeof(uint8_t));
-  memcpy(buffer, b + 1, b[0]);
-  
-  descramble_buffer(buffer);
+typedef struct {
+  uint8_t *buffer;
+  uint64_t size;
+} Message;
 
-  for (int i = 0; i < b[0]; i++) {
-    printf("0x%x\n", buffer[i]);
+ParserContext *
+new_parser_ctx(uint8_t *buffer, uint64_t size) {
+  ParserContext *ctx = malloc(sizeof(ParserContext));
+  *ctx = (ParserContext){buffer, size, 0, 0};
+
+  return ctx;
+}
+
+Message next_message(ParserContext *p) {
+  uint8_t *curr = p->curr;
+  uint8_t *next = p->next;
+  Message message = {0, 0};
+
+  if (!curr) {
+    curr = p->buffer;
+
+    for (uint8_t *byte = curr + 1;
+         byte < (p->buffer + p->size) || !(*byte & 128); byte++, message.size++) {
+
+      if (byte >= (p->buffer + p->size)) {
+	next = 0;
+	break;
+      }
+
+      next = byte;
+    }
   }
-  */
 
-  ABSCOORD x = {
-      0x00, 0x00, 0x02, 0x3C, 0x02,
+  p->curr = curr;
+  p->next = next;
+
+  message.buffer = curr;
+
+  return message;
+}
+
+int main(void) {
+  uint8_t x[6] = {
+    0x80, 0x00, 0x00, 0x02, 0x3C, 0x02,
   };
 
-  printf("%" PRIu64 "\n", abscoord_to_int(&x));
+  ParserContext *ctx = new_parser_ctx((uint8_t *)&x, 6);
 
+  Message m = next_message(ctx);
+  
   return 0;
 }
