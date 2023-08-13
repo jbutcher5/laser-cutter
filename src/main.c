@@ -23,28 +23,6 @@ uint64_t abscoord_to_int(ABSCOORD *x) {
   return buffer;
 }
 
-uint8_t *transmition(const char *s) {
-  // Final buffer to be returned at the end
-  static uint8_t buffer[256];
-  buffer[0] = strlen(s) / 2;
-
-  // Create null-terminated buffer
-  char tmp[3];
-  tmp[2] = 0;
-
-  // Read data into buffer
-  for (int i = 0; i < strlen(s); i += 2) {
-    int buff_index = (i / 2) + 1;
-
-    tmp[0] = s[i];
-    tmp[1] = s[i + 1];
-
-    buffer[buff_index] = strtol(tmp, 0, 16);
-  }
-
-  return buffer;
-}
-
 uint8_t descramble(uint8_t s) {
   /* Found on https://stefan.schuermans.info/rdcam/scrambling.html
    * For descrambling bytes.
