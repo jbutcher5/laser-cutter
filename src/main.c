@@ -51,8 +51,7 @@ typedef struct {
   uint64_t size;
 } Message;
 
-ParserContext *
-new_parser_ctx(uint8_t *buffer, uint64_t size) {
+ParserContext *new_parser_ctx(uint8_t *buffer, uint64_t size) {
   ParserContext *ctx = malloc(sizeof(ParserContext));
   *ctx = (ParserContext){buffer, size, 0, 0};
 
@@ -68,11 +67,12 @@ Message next_message(ParserContext *p) {
     curr = p->buffer;
 
     for (uint8_t *byte = curr + 1;
-         byte < (p->buffer + p->size) || !(*byte & 128); byte++, message.size++) {
+         byte < (p->buffer + p->size) || !(*byte & 128);
+         byte++, message.size++) {
 
       if (byte >= (p->buffer + p->size)) {
-	next = 0;
-	break;
+        next = 0;
+        break;
       }
 
       next = byte;
@@ -88,13 +88,15 @@ Message next_message(ParserContext *p) {
 }
 
 int main(void) {
-  uint8_t x[6] = {
-    0x80, 0x00, 0x00, 0x02, 0x3C, 0x02,
+  uint8_t x[7] = {
+      0x80, 0x00, 0x00, 0x02, 0x3C, 0x02, 0x80
   };
 
   ParserContext *ctx = new_parser_ctx((uint8_t *)&x, 6);
 
   Message m = next_message(ctx);
-  
+
+  printf("%" PRIu64 "\n", m.size);
+
   return 0;
 }
