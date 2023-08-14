@@ -33,12 +33,6 @@ uint8_t descramble(uint8_t s) {
   return p;
 }
 
-void descramble_buffer(uint8_t *buff) {
-  for (int i = 1; i < buff[0]; i++) {
-    buff[i] = descramble(buff[i]);
-  }
-}
-
 typedef struct {
   uint8_t *buffer;
   uint64_t size;
